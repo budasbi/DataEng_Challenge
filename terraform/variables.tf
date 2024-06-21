@@ -5,9 +5,9 @@ variable "rds_password" {
 }
 
 variable "default_tag" {
-      type        = string
+  type        = string
   description = "default tag"
-  default = "data_challenge"
+  default     = "data_challenge"
   sensitive   = false
 
 }
