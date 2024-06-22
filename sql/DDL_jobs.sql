@@ -1,5 +1,5 @@
 create table jobs(
 	id int primary key,
-	job varchar
+	job varchar(50)
 
 );

@@ -1,7 +1,7 @@
 create table hired_employees(
 	id int primary key,
-	name varchar,
-	datetime varchar,
+	name varchar(100),
+	datetime varchar(30),
 	department_id integer,
 	job_id integer
 );
