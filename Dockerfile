@@ -9,4 +9,4 @@ RUN pip install --upgrade pipenv
 RUN pip3 install -r requirements.txt
 
 
-ENTRYPOINT ["python","./lambda_data_challenge.py"]
+ENTRYPOINT ["python","./src/lambda_data_challenge.py"]
