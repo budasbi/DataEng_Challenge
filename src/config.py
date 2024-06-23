@@ -8,6 +8,12 @@ PROJECT_ROOT = os.path.dirname(
     )
 )
 PARENT_DIRECTORY = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+
+required_paths = ['historical_data', 'backups','sql']
+for path in required_paths:
+    if not os.path.exists(os.path.join(PARENT_DIRECTORY,path)):
+        os.makedirs(os.path.join(PARENT_DIRECTORY,path))
+
 DATA_FILES = os.path.join(PARENT_DIRECTORY,'historical_data')
 BACKUPS_FILES = os.path.join(PARENT_DIRECTORY,'backups')
 SQL_FILES =  os.path.join(PARENT_DIRECTORY,'sql')
