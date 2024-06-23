@@ -148,7 +148,7 @@ def download_s3_files():
     """
     os.environ['AWS_DEFAULT_REGION']='us-east-1'
     s3_client = boto3.client('s3')
-    s3_client.download_file('data-challenge-bucket-oscar','data/departments.xlsx',os.path.join(DATA_FILES,'jobs.xlsx'))
+    s3_client.download_file('data-challenge-bucket-oscar','data/jobs.xlsx',os.path.join(DATA_FILES,'jobs.xlsx'))
     s3_client.download_file('data-challenge-bucket-oscar','data/departments.xlsx',os.path.join(DATA_FILES,'departments.xlsx'))
     s3_client.download_file('data-challenge-bucket-oscar','data/hired_employees.xlsx',os.path.join(DATA_FILES,'hired_employees.xlsx'))
     
