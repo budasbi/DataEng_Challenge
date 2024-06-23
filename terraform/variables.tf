@@ -23,3 +23,18 @@ variable "DATABASE_USER" {
   description = "database user"
   sensitive   = false
 }
+
+
+variable "region" {
+  type        = string
+  description = "region"
+  sensitive   = false
+  default     = "us-east-1"
+}
+
+variable "accountId" {
+  type        = string
+  description = "accountid"
+  sensitive   = false
+  default     = "975691492030"
+}
