@@ -31,3 +31,9 @@ build:
 	terraform output > terraform_outputs.txt && \
 	cd .. && \
 	make load_files_to_s3
+build_docker:
+	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 975691492030.dkr.ecr.us-east-1.amazonaws.com && \
+	docker build -t lambda_data_challenge_repo . && \
+	docker tag lambda_data_challenge_repo:latest 975691492030.dkr.ecr.us-east-1.amazonaws.com/lambda_data_challenge_repo:latest && \
+	docker push 975691492030.dkr.ecr.us-east-1.amazonaws.com/lambda_data_challenge_repo:latest
+	
