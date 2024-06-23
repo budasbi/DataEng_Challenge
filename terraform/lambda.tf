@@ -1,6 +1,6 @@
 resource "aws_lambda_function" "lambda_data_challenge" {
-  function_name                  = "lambda_data_challenge"
-  description                    = "Lambra triggered by api gateway for Globant code challenge"
+  function_name = "lambda_data_challenge"
+  description   = "Lambra triggered by api gateway for Globant code challenge"
   # runtime                        = "python3.12"
   role                           = aws_iam_role.lambda_exec.arn
   architectures                  = ["x86_64"]
@@ -19,7 +19,7 @@ resource "aws_lambda_function" "lambda_data_challenge" {
   tags = {
     Name = var.default_tag
   }
-  
+
 }
 
 resource "aws_iam_role" "lambda_exec" {
@@ -44,29 +44,29 @@ resource "aws_iam_policy" "lambda_policy" {
   description = "Policy for Lambda functions"
 
   policy = jsonencode({
-    "Version": "2012-10-17",
-    "Statement": [
+    "Version" : "2012-10-17",
+    "Statement" : [
       {
-        "Effect": "Allow",
-        "Action": [
+        "Effect" : "Allow",
+        "Action" : [
           "s3:GetObject",
           "s3:PutObject"
         ],
-        "Resource": [
+        "Resource" : [
           "arn:aws:s3:::example-bucket/*"
         ]
       },
       {
-      "Effect": "Allow",
-      "Action": [
-        "ec2:DescribeNetworkInterfaces",
-        "ec2:CreateNetworkInterface",
-        "ec2:DeleteNetworkInterface",
-        "ec2:DescribeInstances",
-        "ec2:AttachNetworkInterface"
-      ],
-      "Resource": "*"
-    }
+        "Effect" : "Allow",
+        "Action" : [
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:CreateNetworkInterface",
+          "ec2:DeleteNetworkInterface",
+          "ec2:DescribeInstances",
+          "ec2:AttachNetworkInterface"
+        ],
+        "Resource" : "*"
+      }
     ]
   })
 }
