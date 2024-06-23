@@ -5,6 +5,7 @@ dotenv.load_dotenv()
 import pandas as pd
 from config import DATA_FILES, DATABASE_HOST, DATABASE_NAME, DATABASE_PASS, DATABASE_USER
 import psycopg2
+import boto3
 import io
 import traceback
 from sqlalchemy import create_engine
@@ -141,14 +142,27 @@ def load_hired_employees():
     
 
 # %%
-def load_all_tables_data():
-    """Loads data by sequence: 1. Jobs, 2. Departments, 3: hired_employees
+
+def download_s3_files():
+    """Downloads jobs, departments, hired_employees files from s3
     """
+    os.environ['AWS_DEFAULT_REGION']='us-east-1'
+    s3_client = boto3.client('s3')
+    s3_client.download_file('data-challenge-bucket-oscar','data/departments.xlsx',os.path.join(DATA_FILES,'jobs.xlsx'))
+    s3_client.download_file('data-challenge-bucket-oscar','data/departments.xlsx',os.path.join(DATA_FILES,'departments.xlsx'))
+    s3_client.download_file('data-challenge-bucket-oscar','data/hired_employees.xlsx',os.path.join(DATA_FILES,'hired_employees.xlsx'))
+    
+    
+def load_all_tables_data():
+    """Downloads all files and loads data by sequence: 1. Jobs, 2. Departments, 3: hired_employees
+    """
+    download_s3_files()
     load_jobs_file()
     load_departments_file()
     load_hired_employees()
 
 # %%
-load_all_tables_data()
+if __name__== '__main__':
+    load_all_tables_data()
 
 
