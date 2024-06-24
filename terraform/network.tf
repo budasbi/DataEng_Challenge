@@ -8,7 +8,12 @@ resource "aws_vpc" "my_vpc" {
     Name = var.default_tag
   }
 }
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id = aws_vpc.my_vpc.id
+  service_name = "com.amazonaws.${var.region}.s3"
 
+  route_table_ids = [aws_vpc.my_vpc.main_route_table_id]
+}
 # Creación de un Internet Gateway
 resource "aws_internet_gateway" "igw_rds" {
   vpc_id     = aws_vpc.my_vpc.id
@@ -61,12 +66,28 @@ resource "aws_security_group" "rds_sg" {
   name_prefix = "rds-sg"
 
   vpc_id = aws_vpc.my_vpc.id
-  ingress {
+  ingress = [{
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-  }
+    self = false
+    ipv6_cidr_blocks = []
+    prefix_list_ids = []
+    security_groups = []
+    description = ""
+  },
+  {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    self = false
+    ipv6_cidr_blocks = []
+    prefix_list_ids = []
+    security_groups = []
+    description = ""
+  }]
   tags = {
     Name = var.default_tag
   }

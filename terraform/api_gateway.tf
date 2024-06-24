@@ -159,6 +159,7 @@ resource "aws_api_gateway_integration" "jobs" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.lambda_data_challenge.invoke_arn
+  timeout_milliseconds = 29000
 
 }
 

@@ -7,7 +7,8 @@ resource "aws_lambda_function" "lambda_data_challenge" {
   package_type                   = "Image"
   reserved_concurrent_executions = 1
   image_uri                      = "975691492030.dkr.ecr.us-east-1.amazonaws.com/lambda_data_challenge_repo:latest"
-  memory_size                    = 128
+  memory_size                    = 256
+  timeout                        = 40    
   # handler                        = "lambda_data_challenge.lambda_handler"
   vpc_config {
     ipv6_allowed_for_dual_stack = false
@@ -53,7 +54,7 @@ resource "aws_iam_policy" "lambda_policy" {
           "s3:PutObject"
         ],
         "Resource" : [
-          "arn:aws:s3:::example-bucket/*"
+          "arn:aws:s3:::${aws_s3_bucket.data_challenge_bucket.bucket}/*"
         ]
       },
       {
