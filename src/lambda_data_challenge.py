@@ -1,9 +1,9 @@
-import boto3
-import psycopg2
 import json
 from load_data_to_db.copy_to_db import load_all_tables_data
+from load_data_to_db.add_new_records import add_new_jobs, add_new_hired, add_new_departments
 from backup_manager.backup_manager import backup_all_tables, restore_all_tables
 import logging
+import pandas as pd
 logger = logging.getLogger('log')
 logger.setLevel(level=logging.INFO)
 
@@ -12,8 +12,10 @@ def lambda_handler(event, context):
     print(event)
     print(event['resource'])
     print(event['httpMethod'])
+    print(event['body'])
     path = event['resource']
     http_method = event['httpMethod']
+    payload = event['body']
     try:
         if http_method == 'PUT':
             if path == '/load_data':
@@ -39,10 +41,16 @@ def lambda_handler(event, context):
         elif http_method == 'POST':
             body = event["body"]
             if path == '/jobs':
+                jobs_df  = pd.DataFrame(payload['jobs'])
+                add_new_jobs(jobs_df)
                 response_message = 'Data Loaded into jobs table!'
             elif path == '/departments':
+                jobs_df  = pd.DataFrame(payload['departments'])
+                add_new_jobs(jobs_df)
                 response_message = 'Data Loaded jobs departments!'
             elif path == '/hired_employees':
+                jobs_df  = pd.DataFrame(payload['hired_employees'])
+                add_new_jobs(jobs_df)
                 response_message = 'Data Loaded jobs hired_employees!'
             else:
                 return {
