@@ -1,0 +1,55 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Git
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+
+      - name: Get current version
+        id: get_version
+        run: |
+          VERSION=$(git describe --tags --abbrev=0)
+          if [ -z "$VERSION" ]; then
+            VERSION="v0.0.0"
+          fi
+          echo "Current version: $VERSION"
+          echo "::set-output name=version::$VERSION"
+
+      - name: Bump version and create tag
+        id: bump_version
+        run: |
+          # Bump the version (this example assumes semantic versioning)
+          VERSION=${{ steps.get_version.outputs.version }}
+          NEW_VERSION=$(echo $VERSION | awk -F. '{printf "v%d.%d.%d", $1, $2, $3+1}')
+          git tag $NEW_VERSION
+          echo "::set-output name=new_version::$NEW_VERSION"
+      
+      - name: Push new tag
+        run: |
+          git push origin ${{ steps.bump_version.outputs.new_version }}
+      
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.bump_version.outputs.new_version }}
+          release_name: Release ${{ steps.bump_version.outputs.new_version }}
+          body: |
+            Changes in this release:
+            - Describe your changes here
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
