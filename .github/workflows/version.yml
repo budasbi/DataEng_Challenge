@@ -33,15 +33,19 @@ jobs:
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
           IFS='.' read -r -a VERSION_PARTS <<< "${VERSION/v/}"
-          NEW_VERSION="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$((VERSION_PARTS[2])+1)"
+          MAJOR=${VERSION_PARTS[0]}
+          MINOR=${VERSION_PARTS[1]}
+          PATCH=${VERSION_PARTS[2]}
+          NEW_PATCH=$((PATCH+1))
+          NEW_VERSION="v$MAJOR.$MINOR.$NEW_PATCH"
 
+          # Loop to find a non-existing tag
           while git rev-parse "$NEW_VERSION" >/dev/null 2>&1; do
-            NEW_VERSION="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$((VERSION_PARTS[2])+1)"
-            VERSION_PARTS[2]=$((VERSION_PARTS[2]+1))
+            NEW_PATCH=$((NEW_PATCH+1))
+            NEW_VERSION="v$MAJOR.$MINOR.$NEW_PATCH"
           done
 
-          echo "New version:" 
-          echo $NEW_VERSION
+          echo "New version: $NEW_VERSION"
           git tag "$NEW_VERSION"
           echo "::set-output name=new_version::$NEW_VERSION"
       
