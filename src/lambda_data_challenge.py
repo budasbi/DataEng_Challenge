@@ -15,7 +15,6 @@ def lambda_handler(event, context):
     print(event['body'])
     path = event['resource']
     http_method = event['httpMethod']
-    payload = event['body']
     try:
         if http_method == 'PUT':
             if path == '/load_data':
@@ -39,26 +38,34 @@ def lambda_handler(event, context):
             return { "statusCode": 200, "body": json.dumps({"message": response_message}) }
         
         elif http_method == 'POST':
-            body = event["body"]
+            logger.info('Executing POST')
+            payload = json.loads(event['body'])
+            
             if path == '/jobs':
                 jobs_df  = pd.DataFrame(payload['jobs'])
+                logger.info('Executing add_new_jobs')
                 add_new_jobs(jobs_df)
                 response_message = 'Data Loaded into jobs table!'
+                
             elif path == '/departments':
-                jobs_df  = pd.DataFrame(payload['departments'])
-                add_new_jobs(jobs_df)
-                response_message = 'Data Loaded jobs departments!'
+                departments_df  = pd.DataFrame(payload['departments'])
+                logger.info('Executing add_new_departments')
+                add_new_departments(departments_df)
+                response_message = 'Data Loaded jobs departments table!'
+                
             elif path == '/hired_employees':
-                jobs_df  = pd.DataFrame(payload['hired_employees'])
-                add_new_jobs(jobs_df)
-                response_message = 'Data Loaded jobs hired_employees!'
+                hired_df  = pd.DataFrame(payload['hired_employees'])
+                logger.info('Executing add_new_hired')
+                add_new_hired(hired_df)
+                response_message = 'Data Loaded jobs hired_employees table!'
+                
             else:
                 return {
                     "statusCode": 404,
                     "body": json.dumps({"error": "Resource not found"})
                 }
                 
-            return { "statusCode": 201, "body": json.dumps({"message": response_message, "payload": body}) }
+            return { "statusCode": 201, "body": json.dumps({"message": response_message, "payload": payload}) }
                 
     except Exception as e:
         return {"statusCode": 500, 
