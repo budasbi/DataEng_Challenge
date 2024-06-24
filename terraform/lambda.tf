@@ -16,6 +16,13 @@ resource "aws_lambda_function" "lambda_data_challenge" {
     subnet_ids                  = [aws_subnet.private_subnet_b.id, aws_subnet.private_subnet_a.id]
 
   }
+  environment {
+    variables = {
+      TF_VAR_DATABASE = var.DATABASE
+      TF_VAR_DATABASE_USER = var.DATABASE_USER
+      TF_VAR_DATABASE_PASSWORD = var.DATABASE_PASSWORD
+    }
+  }
 
   tags = {
     Name = var.default_tag
@@ -67,7 +74,15 @@ resource "aws_iam_policy" "lambda_policy" {
           "ec2:AttachNetworkInterface"
         ],
         "Resource" : "*"
-      }
+      },
+      {
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetParameter",
+        "ssm:GetParameters"
+      ],
+      "Resource": "*"
+    }
     ]
   })
 }
