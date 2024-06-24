@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - main
 
 env:
   ECR_REGISTRY: 975691492030.dkr.ecr.us-east-1.amazonaws.com
