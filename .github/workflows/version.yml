@@ -21,17 +21,13 @@ jobs:
       - name: Get current version
         id: get_version
         run: |
-          VERSION=$(git describe --tags --abbrev=0)
-          if [ -z "$VERSION" ]; then
-            VERSION="v0.0.0"
-          fi
+          VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "Current version: $VERSION"
           echo "::set-output name=version::$VERSION"
 
       - name: Bump version and create tag
         id: bump_version
         run: |
-          # Bump the version (this example assumes semantic versioning)
           VERSION=${{ steps.get_version.outputs.version }}
           NEW_VERSION=$(echo $VERSION | awk -F. '{printf "v%d.%d.%d", $1, $2, $3+1}')
           git tag $NEW_VERSION
