@@ -12,7 +12,6 @@ from sqlalchemy import create_engine
 import logging
 logger = logging.getLogger('log')
 import botocore
-from load_data_to_db.copy_to_db import load_to_logs
 
 # %%
 
@@ -32,6 +31,7 @@ def add_new_records_db(df:pd.DataFrame, table:str,fields:str=''):
         integer: 1 if a exception is raised
     """
     # save dataframe to an in memory buffer
+    
     conn = psycopg2.connect(host=DATABASE_HOST, database=DATABASE_NAME, user=DATABASE_USER, password=DATABASE_PASS)
     df = df.reset_index(drop=True)
     cur = conn.cursor()
@@ -53,24 +53,38 @@ def add_new_records_db(df:pd.DataFrame, table:str,fields:str=''):
         print(traceback.format_exc())
         return 1
     
-    
+
+def load_to_logs(df_to_logs:pd.DataFrame, table_name:str):
+    """It will store data from logs file into database
+
+    Args:
+        df_to_logs (pd.DataFrame): dataframe with rows that are incomplete
+        table_name (str): table name where the payload should be written
+    """
+    df_to_logs['payload'] = df_to_logs.apply(lambda row: row.to_dict(), axis=1)
+    df_to_logs['table_name'] = table_name
+    df_to_logs = df_to_logs.loc[:,[ 'table_name', 'payload']]
+    add_new_records_db(df_to_logs,'logs','(table_name, payload)')
+
 def add_new_jobs(jobs_df):
-    
+    logger.info('Executing part 1')
     table_name = 'jobs'
     job_columns = ['id', 'job']
     jobs_df.columns = job_columns
     jobs_df['id'] = jobs_df['id'].astype(int)
     jobs_df['job'] = jobs_df['job'].astype(str)
-    
+    logger.info('Executing part 2')
     #Avoid Duplicates    
     loaded_jobs = pd.read_sql("select distinct id as job_id_db from jobs",con=engine)
     joined = pd.merge(jobs_df, loaded_jobs, how='left', left_on='id', right_on='job_id_db')
     joined['job_id_db'] = joined['job_id_db'].fillna(-99) #New Jobs
-    
+    logger.info('Executing part 3')
     jobs_data_to_db = joined.loc[(joined['job'].notnull())&(joined['id'].notnull()&(joined['job_id_db']==-99)),:]
     jobs_data_to_logs = joined.loc[(joined['job'].isnull())|(joined['id'].isnull()|(joined['job_id_db']!=-99)),:]
     del jobs_data_to_db['job_id_db']
+    logger.info('Executing add_new_records_db for jobs')
     add_new_records_db(df=jobs_data_to_db, table=table_name)
+    logger.info('Executing load to logs for jobs')
     load_to_logs(jobs_data_to_logs,table_name)
     
     
@@ -82,13 +96,15 @@ def add_new_departments(departments_df):
     departments_df['department'] = departments_df['department'].astype(str)
     #Avoid Duplicates
     loaded_departments = pd.read_sql("select distinct id as dep_id_db from departments",con=engine)
-    joined_dep = pd.merge(departments_df,loaded_departments, how='left', left_on='department_id', right_on='dep_id_db' )
+    joined_dep = pd.merge(departments_df,loaded_departments, how='left', left_on='id', right_on='dep_id_db' )
     joined_dep['dep_id_db'] = joined_dep['dep_id_db'].fillna(-99)
     ###Apply All fields required rule
     departments_data_to_db = joined_dep.loc[(joined_dep['department'].notnull())&(joined_dep['id'].notnull()&(joined_dep['dep_id_db']==-99)),:]
     departments_data_to_logs = joined_dep.loc[(joined_dep['department'].isnull())|(joined_dep['id'].isnull()|(joined_dep['dep_id_db']!=-99)),:]
     del departments_data_to_db['dep_id_db']
+    logger.info('Executing add_new_records_db for departments')
     add_new_records_db(df=departments_data_to_db, table=table_name)
+    logger.info('Executing load_to_logs for departments')
     load_to_logs(departments_data_to_logs,table_name)
     
 def add_new_hired(hired_df):
@@ -116,12 +132,14 @@ def add_new_hired(hired_df):
     ###Apply All fields required rule
     #Avoid duplicates 
     loaded_hired = pd.read_sql("select distinct id as hd_id_db from hired_employees",con=engine)
-    hired_employees_data_to_logs = pd.merge(hired_df, loaded_hired,how='left', left_on='id', right_on='hd_id_db' )
-    hired_employees_data_to_logs['hd_id_db'] = hired_employees_data_to_logs['hd_id_db'].fillna(-99)
+    hired_df = pd.merge(hired_df, loaded_hired,how='left', left_on='id', right_on='hd_id_db' )
+    hired_df['hd_id_db'] = hired_df['hd_id_db'].fillna(-99)
     hired_employees_data_to_db = hired_df.loc[(hired_df['id']!=-99)&(hired_df['name']!='')&(hired_df['datetime']!='')&(hired_df['job_id']!=-99)&(hired_df['department_id']!=-99)&(hired_df['job_id_db']!=-99)&(hired_df['dep_id_db']!=-99)&(hired_df['hd_id_db']==-99), :]
     hired_employees_data_to_logs = hired_df.loc[(hired_df['id']==-99)|(hired_df['name']=='')|(hired_df['datetime']=='')|(hired_df['job_id']==-99)|(hired_df['department_id']==-99)|(hired_df['job_id_db']==-99)|(hired_df['dep_id_db']==-99)|(hired_df['hd_id_db']!=-99), :]
     del hired_employees_data_to_db['dep_id_db']
     del hired_employees_data_to_db['job_id_db']
     del hired_employees_data_to_db['hd_id_db']
+    logger.info('Executing add_new_records_db for add_new_hired')
     add_new_records_db(df=hired_employees_data_to_db, table=table_name)
+    logger.info('Executing load_to_logs for add_new_hired')
     load_to_logs(hired_employees_data_to_logs,table_name)
