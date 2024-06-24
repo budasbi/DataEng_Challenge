@@ -14,7 +14,7 @@ jobs:
   job:
 
     name: Build job
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
 
       - name: Configure variables
@@ -42,6 +42,4 @@ jobs:
           tags: |
             ${{ env.ECR_REGISTRY }}/${{ env.REPOSITORY_NAME }}:latest
             ${{ env.ECR_REGISTRY }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          provenance: false%
+          
