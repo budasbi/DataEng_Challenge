@@ -9,13 +9,12 @@ import boto3
 import io
 import traceback
 from sqlalchemy import create_engine
+import logging
+logger = logging.getLogger('log')
+import botocore
 
 # %%
-# DATABASE_HOST = os.environ['']
-DATABASE_NAME = os.environ.get('TF_VAR_DATABASE')
-DATABASE_USER = os.environ['TF_VAR_DATABASE_USER']
-DATABASE_PASS = os.environ['TF_VAR_DATABASE_PASSWORD']
-DATABASE_HOST = 'datachallenge.cwl4757u5g17.us-east-1.rds.amazonaws.com'
+
 
 # %%
 engine = create_engine(f'postgresql+psycopg2://{DATABASE_USER}:{DATABASE_PASS}@{DATABASE_HOST}/{DATABASE_NAME}')
@@ -40,6 +39,7 @@ def copy_expert(df:pd.DataFrame, table:str,fields:str=''):
     buffer.seek(0)
     cur.execute(f'SET search_path TO public')
     cur.execute(f'truncate table {table} cascade')
+    logger.info('Truncating table for %s', table)
     try:
         copy_sql = f"""
                 COPY {table} {fields} FROM stdin WITH CSV HEADER
@@ -146,6 +146,7 @@ def load_hired_employees():
 def download_s3_files():
     """Downloads jobs, departments, hired_employees files from s3
     """
+    
     os.environ['AWS_DEFAULT_REGION']='us-east-1'
     s3_client = boto3.client('s3')
     s3_client.download_file('data-challenge-bucket-oscar','data/jobs.xlsx',os.path.join(DATA_FILES,'jobs.xlsx'))
@@ -156,9 +157,13 @@ def download_s3_files():
 def load_all_tables_data():
     """Downloads all files and loads data by sequence: 1. Jobs, 2. Departments, 3: hired_employees
     """
+    logger.info('Executing download_s3_files')
     download_s3_files()
+    logger.info('Executing load_jobs_file')
     load_jobs_file()
+    logger.info('Executing load_departments_file')
     load_departments_file()
+    logger.info('Executing load_hired_employees')
     load_hired_employees()
 
 # %%
